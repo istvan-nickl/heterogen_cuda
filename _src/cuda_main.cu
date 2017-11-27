@@ -407,12 +407,12 @@ __global__ void kernel_median_char(unsigned char* gInput, unsigned char* gOutput
 	int base = (blockIdx.y * blockDim.y * imgWidthF + blockIdx.x * blockDim.x) * 3;
 
 	// Sharde Memory deklaráció
-	__shared__ unsigned char mem[20 * 20 * 3];
+	__shared__ unsigned char mem[36 * 20 * 3];
 
 	// Shared Memory feltöltés
 	int th1D = blockDim.x * threadIdx.y + threadIdx.x;	// lieáris szál-azonosító a Thread Block-on belül
-	if (th1D < 240)
-		for (int d = 0; d < 5; d++) mem[th1D + 240 * d] = gInput[base + th1D % 60 + (4 * d + th1D / 60) * imgWidthF * 3];
+	if (th1D < 216)
+		for (int d = 0; d < 10; d++) mem[th1D + 240 * d] = gInput[base + th1D % (216 + (2 * d + th1D / 108) * imgWidthF * 3];
 
 	// Szál szinkronizáció
 	__syncthreads();
@@ -420,78 +420,116 @@ __global__ void kernel_median_char(unsigned char* gInput, unsigned char* gOutput
 	for (int i = 0; i < 3; i++){
 		for (int a = 0; a < FILTER_H; a++)
 			for (int b = 0; b < FILTER_W; b++)
-				sort[a * 5 + b] = mem[(20 * (threadIdx.y + a) + threadIdx.x + b) * 3 + i];
+				sort[a * 5 + b] = mem[(36 * (threadIdx.y + a) + 2 * threadIdx.x + b) * 3 + i];
 		//1
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[10], sort[11]); swap(sort[12], sort[13]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]); swap(sort[8], sort[10]); swap(sort[9], sort[11]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]); swap(sort[8], sort[12]); swap(sort[11], sort[13]);
-		swap(sort[0], sort[8]); swap(sort[7], sort[13]);
+		swap(sort[1], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[11], sort[12]); swap(sort[13], sort[14]); swap(sort[16], sort[17]);
+		swap(sort[1], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]); swap(sort[11], sort[13]); swap(sort[12], sort[14]);
+		swap(sort[1], sort[6]); swap(sort[4], sort[9]); swap(sort[11], sort[16]); swap(sort[14], sort[17]);
+		swap(sort[1], sort[11]); swap(sort[9], sort[17]);
+		
 		//2
-		sort[0] = sort[14];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[10], sort[11]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]); swap(sort[8], sort[10]); swap(sort[9], sort[11]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]); swap(sort[8], sort[12]); swap(sort[11], sort[12]);
-		swap(sort[0], sort[8]); swap(sort[7], sort[12]);
+		swap(sort[18], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[11], sort[12]); swap(sort[13], sort[14]);
+		swap(sort[18], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]); swap(sort[11], sort[13]); swap(sort[12], sort[14]);
+		swap(sort[18], sort[6]); swap(sort[4], sort[9]); swap(sort[11], sort[16]); swap(sort[14], sort[16]);
+		swap(sort[18], sort[11]); swap(sort[9], sort[16]);
+		
 		//3
-		sort[0] = sort[15];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[10], sort[11]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]); swap(sort[8], sort[10]); swap(sort[9], sort[11]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]); swap(sort[8], sort[11]);
-		swap(sort[0], sort[8]); swap(sort[7], sort[11]);
+		swap(sort[19], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[11], sort[12]); swap(sort[13], sort[14]);
+		swap(sort[19], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]); swap(sort[11], sort[13]); swap(sort[12], sort[14]);
+		swap(sort[19], sort[6]); swap(sort[4], sort[9]); swap(sort[11], sort[14]);
+		swap(sort[19], sort[11]); swap(sort[9], sort[14]);
+		
 		//4
-		sort[0] = sort[16];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]); swap(sort[8], sort[9]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]); swap(sort[9], sort[10]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]); swap(sort[8], sort[10]);
-		swap(sort[0], sort[8]); swap(sort[7], sort[10]);
+		swap(sort[21], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]); swap(sort[11], sort[12]);
+		swap(sort[21], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]); swap(sort[12], sort[13]);
+		swap(sort[21], sort[6]); swap(sort[4], sort[9]); swap(sort[11], sort[13]);
+		swap(sort[21], sort[11]); swap(sort[9], sort[13]);
+		
 		//5
-		sort[0] = sort[17];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]); swap(sort[8], sort[9]);
-		swap(sort[0], sort[8]); swap(sort[7], sort[9]);
+		swap(sort[22], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]);
+		swap(sort[22], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]);
+		swap(sort[22], sort[6]); swap(sort[4], sort[9]); swap(sort[11], sort[12]);
+		swap(sort[22], sort[11]); swap(sort[9], sort[12]);
+		
 		//6
-		sort[0] = sort[18];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]);
-		swap(sort[0], sort[8]); swap(sort[7], sort[8]);
+		swap(sort[23], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]);
+		swap(sort[23], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]);
+		swap(sort[23], sort[6]); swap(sort[4], sort[9]);
+		swap(sort[23], sort[11]); swap(sort[9], sort[11]);
+		
 		//7
-		sort[0] = sort[19];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]); swap(sort[6], sort[7]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[7]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[7]);
-		swap(sort[0], sort[7]);
+		swap(sort[24], sort[2]); swap(sort[3], sort[4]); swap(sort[6], sort[7]); swap(sort[8], sort[9]);
+		swap(sort[24], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[8]); swap(sort[7], sort[9]);
+		swap(sort[24], sort[6]); swap(sort[4], sort[9]);
+		swap(sort[24], sort[9]);
+		
+		//Counting second pixel, too
+		//0,2,3,4,6,7,8,5,10,15,20
+		sort[11] = sort[2];
+		sort[12] = sort[3];
+		sort[13] = sort[4];
+		sort[14] = sort[6];
+		sort[16] = sort[7];
+		sort[17] = sort[8];
+		sort[18] = mem[(36 * (threadIdx.y) + threadIdx.x + ) * 3 + i];
+		sort[19] = mem[(36 * (threadIdx.y + 1) + threadIdx.x + FILTER_W) * 3 + i];
+		sort[21] = mem[(36 * (threadIdx.y + 2) + threadIdx.x + FILTER_W) * 3 + i];
+		sort[22] = mem[(36 * (threadIdx.y + 3) + threadIdx.x + FILTER_W) * 3 + i];
+		sort[23] = mem[(36 * (threadIdx.y + 4) + threadIdx.x + FILTER_W) * 3 + i];
+		
 		//8
-		sort[0] = sort[20];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]); swap(sort[4], sort[5]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[6]); swap(sort[5], sort[6]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[6]);
-		swap(sort[0], sort[6]);
+		swap(sort[0], sort[2]); swap(sort[3], sort[4]); swap(sort[14], sort[7]);
+		swap(sort[0], sort[3]); swap(sort[2], sort[4]); swap(sort[14], sort[8]); swap(sort[7], sort[8]);
+		swap(sort[0], sort[14]); swap(sort[4], sort[8]);
+		swap(sort[0], sort[8]);
+		//8-2
+		swap(sort[18], sort[11]); swap(sort[12], sort[13]); swap(sort[6], sort[16]);
+		swap(sort[18], sort[12]); swap(sort[11], sort[13]); swap(sort[6], sort[17]); swap(sort[16], sort[17]);
+		swap(sort[18], sort[6]); swap(sort[13], sort[17]);
+		swap(sort[18], sort[17]);
+		
 		//9
-		sort[0] = sort[21];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]); swap(sort[4], sort[5]);
-		swap(sort[0], sort[4]); swap(sort[3], sort[5]);
-		swap(sort[0], sort[5]);
+		swap(sort[5], sort[2]); swap(sort[3], sort[4]);
+		swap(sort[5], sort[3]); swap(sort[2], sort[4]); swap(sort[6], sort[7]);
+		swap(sort[5], sort[6]); swap(sort[4], sort[7]);
+		swap(sort[5], sort[7]);
+		//9-2
+		swap(sort[19], sort[11]); swap(sort[12], sort[13]);
+		swap(sort[19], sort[12]); swap(sort[11], sort[13]); swap(sort[14], sort[16]);
+		swap(sort[19], sort[14]); swap(sort[13], sort[16]);
+		swap(sort[19], sort[16]);
+		
 		//10
-		sort[0] = sort[22];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]);
-		swap(sort[3], sort[4]);
-		swap(sort[0], sort[4]);
+		swap(sort[10], sort[2]); swap(sort[3], sort[4]);
+		swap(sort[10], sort[3]); swap(sort[2], sort[4]);
+		swap(sort[4], sort[6]);
+		swap(sort[10], sort[6]);
+		//10-2
+		swap(sort[21], sort[11]); swap(sort[12], sort[13]);
+		swap(sort[21], sort[12]); swap(sort[11], sort[13]);
+		swap(sort[13], sort[14]);
+		swap(sort[21], sort[14]);
+		
 		//11
-		sort[0] = sort[23];
-		swap(sort[0], sort[1]); swap(sort[2], sort[3]);
-		swap(sort[0], sort[2]); swap(sort[1], sort[3]);
-		swap(sort[0], sort[3]);
+		swap(sort[15], sort[2]); swap(sort[3], sort[4]);
+		swap(sort[15], sort[3]); swap(sort[2], sort[4]);
+		swap(sort[15], sort[4]);
+		//11-2
+		swap(sort[22], sort[11]); swap(sort[12], sort[13]);
+		swap(sort[22], sort[12]); swap(sort[11], sort[13]);
+		swap(sort[22], sort[13]);
+		
 		//12
-		sort[0] = sort[24];
-		swap(sort[0], sort[1]);
-		swap(sort[1], sort[2]);
-		swap(sort[0], sort[2]);
+		swap(sort[20], sort[2]);
+		swap(sort[2], sort[3]);
+		swap(sort[20], sort[3]);
+		//12-2
+		swap(sort[23], sort[11]);
+		swap(sort[11], sort[12]);
+		swap(sort[23], sort[12]);
 
-		gOutput[(row*imgWidth + col) * 3 + i] = sort[1];
+		gOutput[(row*imgWidth + col) * 3 + i] = sort[2];
+		gOutput[(row*imgWidth + col + 1) * 3 + i] = sort[11];
 	}
 }
 
@@ -517,6 +555,9 @@ void cudaMain(int imgHeight, int imgWidth, int imgHeightF, int imgWidthF,
 
 	dim3 thrBlock2(32, 8);
 	dim3 thrGrid2(imgWidth / 32, imgHeight / 8);
+	
+	dim3 thrBlock3(16, 16);
+	dim3 thrGrid3(imgWidth / 32, imgHeight / 16);
 
 	cudaMemcpy(gInput, imgSrc, size_in, cudaMemcpyHostToDevice); 
 
@@ -531,7 +572,7 @@ void cudaMain(int imgHeight, int imgWidth, int imgHeightF, int imgWidthF,
 		//kernel_conv_sh_float_float_nbc << <thrGrid, thrBlock >> >(gInput, gOutput, imgWidth, imgWidthF);
 		//kernel_conv_sh_float_float_nbc_easy << <thrGrid2, thrBlock2 >> >(gInput, gOutput, imgWidth, imgWidthF);
 		//kernel_median << <thrGrid, thrBlock >> >(gInput, gOutput, imgWidth, imgWidthF);
-		kernel_median_char << <thrGrid, thrBlock >> >(gInput, gOutput, imgWidth, imgWidthF);
+		kernel_median_char << <thrGrid3, thrBlock3 >> >(gInput, gOutput, imgWidth, imgWidthF);
 	}
 	cudaThreadSynchronize();
 	e0 = time_measure(2);
