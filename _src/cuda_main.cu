@@ -403,8 +403,8 @@ __global__ void kernel_median_char(unsigned char* gInput, unsigned char* gOutput
 
 
 	int row = threadIdx.y + blockDim.y * blockIdx.y;	// a szál melyik sorban levõ kimeneti pixelt számolja
-	int col = threadIdx.x + blockDim.x * blockIdx.x;   // a szál melyik oszlopban levõ kimeneti pixelt számolja
-	int base = (blockIdx.y * blockDim.y * imgWidthF + blockIdx.x * blockDim.x) * 3;
+	int col = 2 * (threadIdx.x + blockDim.x * blockIdx.x);   // a szál melyik oszlopban levõ kimeneti pixelt számolja
+	int base = (blockIdx.y * blockDim.y * imgWidthF + 2 * blockIdx.x * blockDim.x) * 3;
 
 	// Sharde Memory deklaráció
 	__shared__ unsigned char mem[36 * 20 * 3];
@@ -412,7 +412,8 @@ __global__ void kernel_median_char(unsigned char* gInput, unsigned char* gOutput
 	// Shared Memory feltöltés
 	int th1D = blockDim.x * threadIdx.y + threadIdx.x;	// lieáris szál-azonosító a Thread Block-on belül
 	if (th1D < 216)
-		for (int d = 0; d < 10; d++) mem[th1D + 240 * d] = gInput[base + th1D % (216 + (2 * d + th1D / 108) * imgWidthF * 3];
+		for (int d = 0; d < 10; d++)
+			mem[th1D + 216 * d] = gInput[base + th1D % 108 + (2 * d + th1D / 108) * imgWidthF * 3];
 
 	// Szál szinkronizáció
 	__syncthreads();
@@ -471,11 +472,11 @@ __global__ void kernel_median_char(unsigned char* gInput, unsigned char* gOutput
 		sort[14] = sort[6];
 		sort[16] = sort[7];
 		sort[17] = sort[8];
-		sort[18] = mem[(36 * (threadIdx.y) + threadIdx.x + ) * 3 + i];
-		sort[19] = mem[(36 * (threadIdx.y + 1) + threadIdx.x + FILTER_W) * 3 + i];
-		sort[21] = mem[(36 * (threadIdx.y + 2) + threadIdx.x + FILTER_W) * 3 + i];
-		sort[22] = mem[(36 * (threadIdx.y + 3) + threadIdx.x + FILTER_W) * 3 + i];
-		sort[23] = mem[(36 * (threadIdx.y + 4) + threadIdx.x + FILTER_W) * 3 + i];
+		sort[18] = mem[(36 * (threadIdx.y) + 2*threadIdx.x + FILTER_W) * 3 + i];
+		sort[19] = mem[(36 * (threadIdx.y + 1) + 2*threadIdx.x + FILTER_W) * 3 + i];
+		sort[21] = mem[(36 * (threadIdx.y + 2) + 2*threadIdx.x + FILTER_W) * 3 + i];
+		sort[22] = mem[(36 * (threadIdx.y + 3) + 2*threadIdx.x + FILTER_W) * 3 + i];
+		sort[23] = mem[(36 * (threadIdx.y + 4) + 2*threadIdx.x + FILTER_W) * 3 + i];
 		
 		//8
 		swap(sort[0], sort[2]); swap(sort[3], sort[4]); swap(sort[14], sort[7]);
@@ -528,7 +529,7 @@ __global__ void kernel_median_char(unsigned char* gInput, unsigned char* gOutput
 		swap(sort[11], sort[12]);
 		swap(sort[23], sort[12]);
 
-		gOutput[(row*imgWidth + col) * 3 + i] = sort[2];
+		gOutput[(row*imgWidth + col) * 3 + i] =  sort[2];
 		gOutput[(row*imgWidth + col + 1) * 3 + i] = sort[11];
 	}
 }
